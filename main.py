@@ -27,6 +27,20 @@ async def hello(ctx):
 async def ping(ctx):
     await ctx.send("pong!")
 
+@bot.command()
+async def dm(ctx, *, msg):
+    try:
+        await ctx.author.send(f"du hast gesagt {msg}")
+    except discord.Forbidden:
+        await ctx.send("konnte keine dm senden")
+
+@bot.command()
+async def antworten(ctx):
+  
+    await ctx.reply("das ist eine antwort")
+
+
+
 @bot.event
 async def on_message(message):
 
@@ -47,6 +61,12 @@ async def on_message(message):
 @tree.command(name="hallo", description="sag hallo zurück!")
 async def hallo(interaction: discord.Interaction):
     await interaction.response.send_message(f"hallo {interaction.user.name}")
+
+
+@tree.command(name="votekick", description="votekicke eine person")
+@app_commands.describe(user="Wähle den User, den du kicken willst")
+async def votekick(interaction: discord.Interaction, user: discord.User):
+    await interaction.response.send_message(f"Du hast für einen Kick von {user.mention} abgestimmt!")
 
 
 
