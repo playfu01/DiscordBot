@@ -10,14 +10,11 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True  # Required to read message content
+intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
 
-@bot.event
-async def on_ready():
-    await tree.sync()
-    print(f"Bot is ready. Logged in as {bot.user}.")
 
 @bot.command()
 async def hello(ctx):
@@ -67,6 +64,11 @@ async def hallo(interaction: discord.Interaction):
 @app_commands.describe(user="Wähle den User, den du kicken willst")
 async def votekick(interaction: discord.Interaction, user: discord.User):
     await interaction.response.send_message(f"Du hast für einen Kick von {user.mention} abgestimmt!")
+
+@bot.event
+async def on_ready():
+    await tree.sync()
+    print(f"Bot is ready. Logged in as {bot.user}.")
 
 
 
