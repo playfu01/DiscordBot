@@ -15,6 +15,25 @@ intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
 
+class VoteKickView(discord.ui.View):
+    def __init__(self, target_user: discord.User):
+        super().__init__(timeout=60)
+        self.target_user = target_user
+        self.yes_votes = 0
+        self.no_votes = 0
+
+    @discord.ui.button(label="✅ KICKEN", style=discord.ButtonStyle.danger)
+    async def kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.yes_votes += 1
+        await interaction.response.send_message("✅ Stimme für KICKEN wurde gezählt!", ephemeral=True)
+    
+    @discord.ui.button(label="❌ NICHT KICKEN", style=discord.ButtonStyle.success)
+    async def dont_kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.no_votes += 1
+        await interaction.response.send_message("❌ Stimme für NICHT KICKEN wurde gezählt!", ephemeral=True)
+
+
+
 
 @bot.command()
 async def hello(ctx):
