@@ -64,15 +64,11 @@ async def hallo(interaction: discord.Interaction):
 
 
 @tree.command(name="votekick", description="votekicke eine person")
-@app_commands.guilds(discord.Object(id=922531790416150619))
 @app_commands.describe(user="Wähle den User, den du kicken willst")
 async def votekick(interaction: discord.Interaction, user: discord.User):
     await interaction.response.send_message(f"Du hast für einen Kick von {user.mention} abgestimmt!")
 
-@bot.command()
-async def list_slash(ctx):
-    cmds = await tree.fetch_commands(guild=discord.Object(id=922531790416150619))
-    await ctx.send("\n".join(cmd.name for cmd in cmds))
+
 
 
 
