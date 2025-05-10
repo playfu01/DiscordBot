@@ -15,6 +15,7 @@ intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
+timer = 10
 
 class VoteKickView(discord.ui.View):
     def __init__(self, target_user: discord.Member, guild: discord.Guild):
@@ -24,18 +25,34 @@ class VoteKickView(discord.ui.View):
         self.yes_votes = 0
         self.no_votes = 0
         self.message = None
-        self.timer = 60
+        self.timer = timer 
 
-    @discord.ui.button(label="✅ KICKEN", style=discord.ButtonStyle.danger)
+    @discord.ui.button(label="KICKEN", style=discord.ButtonStyle.green)
     async def kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.yes_votes += 1
         await interaction.response.send_message("✅ Stimme fürs KICKEN wurde gezählt!", ephemeral=True)
     
-    @discord.ui.button(label="❌ NICHT KICKEN", style=discord.ButtonStyle.success)
+    @discord.ui.button(label="NICHT KICKEN", style=discord.ButtonStyle.red)
     async def dont_kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.no_votes += 1
         await interaction.response.send_message("❌ Stimme fürs NICHT KICKEN wurde gezählt!", ephemeral=True)
-    @discord.ui.
+
+
+    # update den timer jede sekunde und zählt die stimmen und zeig alles an
+    async def update_timer(self):
+        while self.timer > 0:
+            await asyncio.sleep(1)
+            self.timer -= 1
+            try:
+                await self.message.edit(
+                    content=f"🗳️ Votekick gegen {self.target_user.mention}! Zeit: {self.timer}s verbleibend. Stimme jetzt ab:\n\n✅ {self.yes_votes} Stimmen\n❌ {self.no_votes} Stimmen",
+                    view=self)
+            except discord.NotFound:
+                break
+
+        await self.on_timeout()
+    
+
 
     async def on_timeout(self):
         # Wenn die zeit abgeluafen ist, wertet der bot aus
@@ -44,8 +61,8 @@ class VoteKickView(discord.ui.View):
         if self.yes_votes > self.no_votes:
             if self.target_user.voice is not None: # schaut ob der user überhaupt in einem voicechannel ist
                 try:
-                    await self.target_user.move_to(None) # wird verscuht in aus dem voichannel zu kicken
                     result += f"🚨 Mehrheit will {self.target_user.mention} kicken!"
+                    await self.target_user.move_to(None) # wird verscuht in aus dem voichannel zu kicken
                 except discord.Forbidden:
                     result += f"❌ Konnte {self.target_user.mention} nicht aus dem Voicechannel entfernen (fehlende Rechte)." # passiert falls der bot keine rechte hat fürs kicken
             else:
@@ -58,6 +75,12 @@ class VoteKickView(discord.ui.View):
 
         # Nachricht aktualisieren
         await self.message.edit(content=result, view=self)
+
+    async def start_timer(self, message):
+        self.message = message
+        #starte den Timer prozess in einer seperaten task
+        asyncio.create_task(self.update_timer())
+
     
 @tree.command(name="votekick", description="Starte eine Abstimmung um jemanden zu kicken.")
 @app_commands.describe(user="Wähle den User, den du kicken willst")
@@ -71,13 +94,16 @@ async def votekick(interaction: discord.Interaction, user: discord.Member):
      #   return
 
     view = VoteKickView(target_user=user, guild=interaction.guild)
-    msg = await interaction.response.send_message(
-        f"🗳️ Votekick gestartet gegen {user.mention}! Stimme jetzt ab:",
+    await interaction.response.send_message(
+        f"🗳️ Votekick gestartet gegen {user.mention} ! Stimme jetzt ab:",
         view=view
     )
 
-    # Speichere Nachricht fpüür spätere Bearbeitung
+    # Speichere Nachricht für spätere Bearbeitung
     view.message = await interaction.original_response()
+
+    # Speichern und Timer starten
+    await view.start_timer(view.message)
 
     
 
