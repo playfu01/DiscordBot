@@ -17,6 +17,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
 timer = 10
 
+
 class VoteKickView(discord.ui.View):
     def __init__(self, target_user: discord.Member, guild: discord.Guild):
         super().__init__(timeout=timer)
@@ -26,16 +27,29 @@ class VoteKickView(discord.ui.View):
         self.no_votes = 0
         self.message = None
         self.timer = timer 
+        self.voted = []
 
     @discord.ui.button(label="KICKEN", style=discord.ButtonStyle.green)
     async def kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.yes_votes += 1
-        await interaction.response.send_message("✅ Stimme fürs KICKEN wurde gezählt!", ephemeral=True)
+        if interaction.user.id not in self.voted:
+             self.yes_votes += 1
+             self.voted.append(interaction.user.id)
+             await interaction.response.send_message("✅ Stimme fürs KICKEN wurde gezählt!", ephemeral=True)
+        else:
+            await interaction.response.send_message("Du hast schon gevoted", ephemeral=True)
+
+       
     
     @discord.ui.button(label="NICHT KICKEN", style=discord.ButtonStyle.red)
     async def dont_kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.no_votes += 1
-        await interaction.response.send_message("❌ Stimme fürs NICHT KICKEN wurde gezählt!", ephemeral=True)
+        if interaction.user.id not in self.voted:
+             self.no_votes += 1
+             self.voted.append(interaction.user.id)
+             await interaction.response.send_message("❌ Stimme fürs NICHT KICKEN wurde gezählt!", ephemeral=True)
+        else:
+            await interaction.response.send_message("Du hast schon gevoted", ephemeral=True)
+        
+        
 
 
     # update den timer jede sekunde und zählt die stimmen und zeig alles an
