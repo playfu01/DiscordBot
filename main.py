@@ -60,12 +60,12 @@ class VoteKickView(discord.ui.View):
 @app_commands.describe(user="Wähle den User, den du kicken willst")
 async def votekick(interaction: discord.Interaction, user: discord.Member):
 
-    og_turtle = interaction.guild.get_role(895597801289961522)
-    crazy_turtle = interaction.guild.get_role(1361142495580524584)
-    member = interaction.guild.get_member(interaction.user.id)
-    if og_turtle not in member.roles or crazy_turtle not in member.roles: 
-        await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
-        return
+    #og_turtle = interaction.guild.get_role(895597801289961522)
+    #crazy_turtle = interaction.guild.get_role(1361142495580524584)
+   # member = interaction.guild.get_member(interaction.user.id)
+    #if og_turtle not in member.roles or crazy_turtle not in member.roles: 
+    #    await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
+    #    return
 
     view = VoteKickView(target_user=user, guild=interaction.guild)
     msg = await interaction.response.send_message(
