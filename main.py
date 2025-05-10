@@ -47,6 +47,19 @@ class VoteKickView(discord.ui.View):
         # Nachricht aktualiesieren
         await self.message.edit(content=result, view=self)
     
+@tree.command(name="votekick", description="Starte eine Abstimmung um jemanden zu kicken.")
+@app_commands.describe(user="Wähle den User, den du kicken willst")
+async def votekick(interaction: discord.Interaction, user: discord.User):
+    view = VoteKickView(target_user=user)
+    msg = await interaction.response.send_message(
+        f"🗳️ Votekick gestartet gegen {user.mention}! Stimme jetzt ab:",
+        view=view
+    )
+
+    # Speichere Nachricht fpüür spätere Bearbeitung
+    view.message = await interaction.original_response()
+
+    
 
 
 
