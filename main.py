@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 from discord.ext import commands
 from discord import app_commands
+import asyncio
 
 
 load_dotenv()
@@ -17,12 +18,13 @@ tree = bot.tree
 
 class VoteKickView(discord.ui.View):
     def __init__(self, target_user: discord.Member, guild: discord.Guild):
-        super().__init__(timeout=60)
+        super().__init__(timeout=timer)
         self.target_user = target_user
         self.guild = guild
         self.yes_votes = 0
         self.no_votes = 0
         self.message = None
+        self.timer = 60
 
     @discord.ui.button(label="✅ KICKEN", style=discord.ButtonStyle.danger)
     async def kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -33,6 +35,7 @@ class VoteKickView(discord.ui.View):
     async def dont_kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.no_votes += 1
         await interaction.response.send_message("❌ Stimme fürs NICHT KICKEN wurde gezählt!", ephemeral=True)
+    @discord.ui.
 
     async def on_timeout(self):
         # Wenn die zeit abgeluafen ist, wertet der bot aus
@@ -56,16 +59,16 @@ class VoteKickView(discord.ui.View):
         # Nachricht aktualisieren
         await self.message.edit(content=result, view=self)
     
-@tree.command(name="Votekick", description="Starte eine Abstimmung um jemanden zu kicken.")
+@tree.command(name="votekick", description="Starte eine Abstimmung um jemanden zu kicken.")
 @app_commands.describe(user="Wähle den User, den du kicken willst")
 async def votekick(interaction: discord.Interaction, user: discord.Member):
 
-    og_turtle = interaction.guild.get_role(895597801289961522)
-    crazy_turtle = interaction.guild.get_role(1361142495580524584)
-    member = interaction.guild.get_member(interaction.user.id)
-    if og_turtle not in member.roles or crazy_turtle not in member.roles: 
-        await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
-        return
+    #og_turtle = interaction.guild.get_role(895597801289961522)
+    #crazy_turtle = interaction.guild.get_role(1361142495580524584)
+    #member = interaction.guild.get_member(interaction.user.id)
+    #if og_turtle not in member.roles or crazy_turtle not in member.roles: 
+     #   await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
+     #   return
 
     view = VoteKickView(target_user=user, guild=interaction.guild)
     msg = await interaction.response.send_message(
