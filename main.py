@@ -25,12 +25,30 @@ class VoteKickView(discord.ui.View):
     @discord.ui.button(label="✅ KICKEN", style=discord.ButtonStyle.danger)
     async def kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.yes_votes += 1
-        await interaction.response.send_message("✅ Stimme für KICKEN wurde gezählt!", ephemeral=True)
+        await interaction.response.send_message("✅ Stimme fürs KICKEN wurde gezählt!", ephemeral=True)
     
     @discord.ui.button(label="❌ NICHT KICKEN", style=discord.ButtonStyle.success)
     async def dont_kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.no_votes += 1
-        await interaction.response.send_message("❌ Stimme für NICHT KICKEN wurde gezählt!", ephemeral=True)
+        await interaction.response.send_message("❌ Stimme fürs NICHT KICKEN wurde gezählt!", ephemeral=True)
+
+    async def on_timeout(self):
+        # Wenn die zeit abgeluafen ist, wertet der bot aus
+        result = f"🗳️ Abstimmung beendet: {self.yes_votes}x Ja, {self.no_votes}x Nein. \n"
+        
+        if self.yes_votes > self.no_votes:
+            result += f"🚨 Mehrheit will {self.target_user.mention} kicken!"
+        else:
+            result += f" {self.target_user.mention} darf bleiben."
+
+        for item in self.children:
+            item.disabled = True # buttons deaktivieren
+
+        # Nachricht aktualiesieren
+        await self.message.edit(content=result, view=self)
+    
+
+    
 
 
 
