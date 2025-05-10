@@ -16,11 +16,13 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
 
 class VoteKickView(discord.ui.View):
-    def __init__(self, target_user: discord.User):
+    def __init__(self, target_user: discord.Member, guild: discord.Guild):
         super().__init__(timeout=60)
         self.target_user = target_user
+        self.guild = guild
         self.yes_votes = 0
         self.no_votes = 0
+        self.message = None
 
     @discord.ui.button(label="✅ KICKEN", style=discord.ButtonStyle.danger)
     async def kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -34,12 +36,19 @@ class VoteKickView(discord.ui.View):
 
     async def on_timeout(self):
         # Wenn die zeit abgeluafen ist, wertet der bot aus
-        result = f"🗳️ Abstimmung beendet: {self.yes_votes}x Ja, {self.no_votes}x Nein. \n"
-        
+        result = f"🗳️ Abstimmung beendet: ✅ {self.yes_votes} | ❌ {self.no_votes}\n"
+        # hier werden die votes gezählt
         if self.yes_votes > self.no_votes:
-            result += f"🚨 Mehrheit will {self.target_user.mention} kicken!"
+            if self.target_user.voice is not None: # schaut ob der user überhaupt in einem voicechannel ist
+                try:
+                    await self.target_user.move_to(None) # wird verscuht in aus dem voichannel zu kicken
+                    result += f"🚨 Mehrheit will {self.target_user.mention} kicken!"
+                except discord.Forbidden:
+                    result += f"❌ Konnte {self.target_user.mention} nicht aus dem Voicechannel entfernen (fehlende Rechte)." # passiert falls der bot keine rechte hat fürs kicken
+            else:
+                result += f"ℹ️ {self.target_user.mention} ist nicht in einem Voicechannel" # wenn er in keine voicechannel ist
         else:
-            result += f" {self.target_user.mention} darf bleiben."
+            result += f" {self.target_user.mention} darf bleiben." # die vote waren dafür, dass er im Voicechannel bleiben darf
 
         for item in self.children:
             item.disabled = True # buttons deaktivieren
@@ -47,10 +56,10 @@ class VoteKickView(discord.ui.View):
         # Nachricht aktualiesieren
         await self.message.edit(content=result, view=self)
     
-@tree.command(name="votekick", description="Starte eine Abstimmung um jemanden zu kicken.")
+@tree.command(name="gutentag", description="Starte eine Abstimmung um jemanden zu kicken.")
 @app_commands.describe(user="Wähle den User, den du kicken willst")
-async def votekick(interaction: discord.Interaction, user: discord.User):
-    view = VoteKickView(target_user=user)
+async def votekick(interaction: discord.Interaction, user: discord.Member):
+    view = VoteKickView(target_user=user, guild=interaction.guild)
     msg = await interaction.response.send_message(
         f"🗳️ Votekick gestartet gegen {user.mention}! Stimme jetzt ab:",
         view=view
