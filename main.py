@@ -53,12 +53,20 @@ class VoteKickView(discord.ui.View):
         for item in self.children:
             item.disabled = True # buttons deaktivieren
 
-        # Nachricht aktualiesieren
+        # Nachricht aktualisieren
         await self.message.edit(content=result, view=self)
     
 @tree.command(name="gutentag", description="Starte eine Abstimmung um jemanden zu kicken.")
 @app_commands.describe(user="Wähle den User, den du kicken willst")
 async def votekick(interaction: discord.Interaction, user: discord.Member):
+
+    og_turtle = interaction.guild.get_role(895597801289961522)
+    crazy_turtle = interaction.guild.get_role(1361142495580524584)
+    member = interaction.guild.get_member(interaction.user.id)
+    if og_turtle not in member.roles or crazy_turtle not in member.roles: 
+        await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
+        return
+
     view = VoteKickView(target_user=user, guild=interaction.guild)
     msg = await interaction.response.send_message(
         f"🗳️ Votekick gestartet gegen {user.mention}! Stimme jetzt ab:",
