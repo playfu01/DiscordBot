@@ -48,7 +48,7 @@ class VoteKickView(discord.ui.View):
         await self.message.edit(content=result, view=self)
     
 
-    
+
 
 
 
@@ -95,12 +95,6 @@ async def on_message(message):
 @tree.command(name="hallo", description="sag hallo zurück!")
 async def hallo(interaction: discord.Interaction):
     await interaction.response.send_message(f"hallo {interaction.user.name}")
-
-
-@tree.command(name="votekick", description="votekicke eine person")
-@app_commands.describe(user="Wähle den User, den du kicken willst")
-async def votekick(interaction: discord.Interaction, user: discord.User):
-    await interaction.response.send_message(f"Du hast für einen Kick von {user.mention} abgestimmt!")
 
 @bot.event
 async def on_ready():
