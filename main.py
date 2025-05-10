@@ -15,7 +15,7 @@ intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
-timer = 10
+timer = 60
 
 
 class VoteKickView(discord.ui.View):
