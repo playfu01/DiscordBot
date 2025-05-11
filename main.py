@@ -137,7 +137,7 @@ async def wetter(interaction: discord.Interaction, ort: str):
 
 
     if response.status_code != 200:
-        await interaction.followuo.send("❌ Ort niucht gefunden oder API-Fehler", ephemeral=True)
+        await interaction.followup.send("❌ Ort nicht gefunden oder API-Fehler", ephemeral=True)
         return
     data = response.json()
     stadt = data["name"]
