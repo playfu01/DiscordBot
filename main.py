@@ -4,6 +4,7 @@ import os
 from discord.ext import commands
 from discord import app_commands
 import asyncio
+import requests
 
 
 load_dotenv()
@@ -124,6 +125,36 @@ async def votekick(interaction: discord.Interaction, user: discord.Member):
     # Speichern und Timer starten
     await view.start_timer(view.message)
 # endregion votekick
+
+# Slash command: /wetter ort=Berlin
+@tree.command(name="wetter", description="zeige das aktuelle Wetter für einen ort")
+@app_commands.describe(ort="Gib den Ort ein")
+async def wetter(interaction: discord.Interaction, ort: str):
+    await interaction.response.defer() # für den api anruf falls er lange braucht
+
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={ort}&appid={WEATHER_API_KEY}&units=metric&lang=de"
+    response = requests.get(url)
+
+
+    if response.status_code != 200:
+        await interaction.followuo.send("❌ Ort niucht gefunden oder API-Fehler", ephemeral=True)
+        return
+    data = response.json()
+    stadt = data["name"]
+    temp = data["main"]["temp"]
+    wetter = data["weather"][0]["description"].capitalize()
+    wind = data["wind"]["speed"]
+
+    antwort = (
+        f"📍 **{stadt}**\n"
+        f"🌡️ Temperatur: {temp}°C\n"
+        f"🌥️ Wetter: {wetter}\n"
+        f"💨 Wind: {wind} m/s"
+    )
+
+    await interaction.followup.send(antwort)
+    
+
 
 
 
