@@ -28,15 +28,16 @@ class VoteKickView(discord.ui.View):
         self.message = None
         self.timer = timer 
         self.voted = []
+        self.executed = False # check so it doesnt run twice
 
     @discord.ui.button(label="KICKEN", style=discord.ButtonStyle.green)
     async def kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id not in self.voted:
              self.yes_votes += 1
              self.voted.append(interaction.user.id)
-             await interaction.response.send_message("✅ Stimme fürs KICKEN wurde gezählt!", ephemeral=True)
+             await interaction.response.send_message("✅ Deine Stimme wurde für das Kicken gezählt!", ephemeral=True)
         else:
-            await interaction.response.send_message("Du hast schon gevoted", ephemeral=True)
+            await interaction.response.send_message("Du hast schon gevoted!", ephemeral=True)
 
        
     
@@ -45,16 +46,16 @@ class VoteKickView(discord.ui.View):
         if interaction.user.id not in self.voted:
              self.no_votes += 1
              self.voted.append(interaction.user.id)
-             await interaction.response.send_message("❌ Stimme fürs NICHT KICKEN wurde gezählt!", ephemeral=True)
+             await interaction.response.send_message("❌ Deine Stimme wurde für gegen das Kicken gezählt!", ephemeral=True)
         else:
-            await interaction.response.send_message("Du hast schon gevoted", ephemeral=True)
+            await interaction.response.send_message("Du hast schon gevoted!", ephemeral=True)
         
         
 
 
     # update den timer jede sekunde und zählt die stimmen und zeig alles an
     async def update_timer(self):
-        while self.timer > 0:
+        while self.timer > 0 and not self.executed:
             await asyncio.sleep(1)
             self.timer -= 1
             try:
@@ -69,6 +70,9 @@ class VoteKickView(discord.ui.View):
 
 
     async def on_timeout(self):
+        if self.executed:  # wenn schon einmal ausgeführt nicht noch einmal
+            return
+        self.executed = True
         # Wenn die zeit abgeluafen ist, wertet der bot aus
         result = f"🗳️ Abstimmung beendet: ✅ {self.yes_votes} | ❌ {self.no_votes}\n"
         # hier werden die votes gezählt
@@ -100,12 +104,12 @@ class VoteKickView(discord.ui.View):
 @app_commands.describe(user="Wähle den User, den du kicken willst")
 async def votekick(interaction: discord.Interaction, user: discord.Member):
 
-    #og_turtle = interaction.guild.get_role(895597801289961522)
-    #crazy_turtle = interaction.guild.get_role(1361142495580524584)
-    #member = interaction.guild.get_member(interaction.user.id)
-    #if og_turtle not in member.roles or crazy_turtle not in member.roles: 
-     #   await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
-     #   return
+    og_turtle = interaction.guild.get_role(895597801289961522)
+    crazy_turtle = interaction.guild.get_role(1361142495580524584)
+    member = interaction.guild.get_member(interaction.user.id)
+    if og_turtle not in member.roles and crazy_turtle not in member.roles: 
+        await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
+        return
 
     view = VoteKickView(target_user=user, guild=interaction.guild)
     await interaction.response.send_message(
