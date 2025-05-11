@@ -8,6 +8,7 @@ import asyncio
 
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 
 intents = discord.Intents.default()
 intents.message_content = True  # Required to read message content
@@ -17,7 +18,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
 timer = 30
 
-
+# region votekick
 class VoteKickView(discord.ui.View):
     def __init__(self, target_user: discord.Member, guild: discord.Guild):
         super().__init__(timeout=timer)
@@ -122,6 +123,9 @@ async def votekick(interaction: discord.Interaction, user: discord.Member):
 
     # Speichern und Timer starten
     await view.start_timer(view.message)
+# endregion votekick
+
+
 
     
 
