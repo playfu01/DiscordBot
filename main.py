@@ -154,18 +154,25 @@ async def antworten(ctx):
 
 @bot.event
 async def on_message(message):
-
+    
     # das der bot sich nicht selber antwortet
     if message.author == bot.user:
         return
-    # wenn man hallo antwortet er
-    if message.content.lower() == "hallo":
-        await message.channel.send(f"hallo wie gehts {message.author.name}")
-    # wenn in der nachricht wie gehts dir ist antwortet er
-    elif "wie geht dir" in message.content.lower():
-        await message.channel.send("bottastisch")
+    
+    # man kann hier einfach trigger wörter mit antworten hinzufügen
+    responses = {
+        "turtlebot": "bottastisch!",
+        "samil": "boosted"  
 
-        #wichtig das die andere commands noch funktionieren
+    }
+
+    content = message.content.lower()
+    for trigger, response in responses.items():
+        if trigger in content:
+            await message.channel.send(response)
+            break # damit ur eine antwort pro nachricht 
+
+    #wichtig das die andere commands noch funktionieren
     await bot.process_commands(message)
 
 # Slash command /hallo
