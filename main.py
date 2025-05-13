@@ -1,3 +1,4 @@
+import random
 import discord
 from dotenv import load_dotenv
 import os
@@ -126,6 +127,7 @@ async def votekick(interaction: discord.Interaction, user: discord.Member):
     await view.start_timer(view.message)
 # endregion votekick
 
+# region wetter
 # Slash command: /wetter ort=Berlin
 @tree.command(name="wetter", description="zeige das aktuelle Wetter für einen ort")
 @app_commands.describe(ort="Gib den Ort ein")
@@ -154,8 +156,27 @@ async def wetter(interaction: discord.Interaction, ort: str):
 
     await interaction.followup.send(antwort)
     
+# endregion
+
+# region report
+@tree.command(name="report", description="melde eine Person")
+@app_commands.describe(grund="Warum willst du diese Person melden")
+async def report(interaction: discord.Interaction, grund: str):
+        responses = [
+            f"mimimi {grund} mimimi ",
+            "sei keine pussy",
+            "ohhh nooooo!"
+
+        ]
 
 
+
+        try:
+            await interaction.user.send(random.choice(responses))
+            await interaction.response.send_message("Deine Meldung wurde bearbeitet",ephemeral=True)
+        except discord.Forbidden:
+            await interaction.send("ich kann dir keine dm senden", ephemeral=True)    
+  
 
 
     
