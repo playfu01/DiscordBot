@@ -169,8 +169,6 @@ async def report(interaction: discord.Interaction, grund: str):
 
         ]
 
-
-
         try:
             await interaction.user.send(random.choice(responses))
             await interaction.response.send_message("Deine Meldung wurde bearbeitet",ephemeral=True)
