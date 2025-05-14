@@ -107,12 +107,12 @@ class VoteKickView(discord.ui.View):
 @app_commands.describe(user="Wähle den User, den du kicken willst")
 async def votekick(interaction: discord.Interaction, user: discord.Member):
 
-    og_turtle = interaction.guild.get_role(895597801289961522)
-    crazy_turtle = interaction.guild.get_role(1361142495580524584)
-    member = interaction.guild.get_member(interaction.user.id)
-    if og_turtle not in member.roles and crazy_turtle not in member.roles: 
-        await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
-        return
+    #og_turtle = interaction.guild.get_role(895597801289961522)
+    #crazy_turtle = interaction.guild.get_role(1361142495580524584)
+    #member = interaction.guild.get_member(interaction.user.id)
+    #if og_turtle not in member.roles and crazy_turtle not in member.roles: 
+     #   await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
+      #  return
 
     view = VoteKickView(target_user=user, guild=interaction.guild)
     await interaction.response.send_message(
@@ -173,7 +173,8 @@ async def report(interaction: discord.Interaction, grund: str):
             await interaction.user.send(random.choice(responses))
             await interaction.response.send_message("Deine Meldung wurde bearbeitet",ephemeral=True)
         except discord.Forbidden:
-            await interaction.send("ich kann dir keine dm senden", ephemeral=True)    
+            await interaction.send("ich kann dir keine dm senden", ephemeral=True)
+#endregion    
   
 
 
