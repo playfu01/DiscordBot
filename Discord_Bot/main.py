@@ -34,32 +34,27 @@ class VoteKickView(discord.ui.View):
         self.message = None
         self.timer = timer 
         self.voted = []
-        self.executed = False # check so it doesnt run twice
+        self.executed = False # check so it doesn't run twice
 
     @discord.ui.button(label="KICKEN", style=discord.ButtonStyle.green)
     async def kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id not in self.voted:
              self.yes_votes += 1
              self.voted.append(interaction.user.id)
-             await interaction.response.send_message("✅ Deine Stimme wurde für das Kicken gezählt!", ephemeral=True, delete_after= 30)
+             await interaction.response.send_message("✅ Your vote to kick has been counted!", ephemeral=True, delete_after= 30)
         else:
-            await interaction.response.send_message("Du hast schon gevoted!", ephemeral=True, delete_after= 30)
+            await interaction.response.send_message("You have already voted!", ephemeral=True, delete_after= 30)
 
-       
-    
     @discord.ui.button(label="NICHT KICKEN", style=discord.ButtonStyle.red)
     async def dont_kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id not in self.voted:
              self.no_votes += 1
              self.voted.append(interaction.user.id)
-             await interaction.response.send_message("❌ Deine Stimme wurde gegen das Kicken gezählt!", ephemeral=True, delete_after= 30)
+             await interaction.response.send_message("❌ Your vote against kicking has been counted!", ephemeral=True, delete_after= 30)
         else:
-            await interaction.response.send_message("Du hast schon gevoted!", ephemeral=True, delete_after= 30)
-        
-        
+            await interaction.response.send_message("You have already voted!", ephemeral=True, delete_after= 30)
 
-
-    # update den timer jede sekunde und zählt die stimmen und zeig alles an
+    # update the timer every second and count the votes and display everything
     async def update_timer(self):
         if self.message is not None:
             while self.timer > 0 and not self.executed:
@@ -67,7 +62,7 @@ class VoteKickView(discord.ui.View):
                 self.timer -= 1
                 try:
                     await self.message.edit(
-                        content=f"🗳️ Votekick gegen {self.target_user.mention}! Zeit: {self.timer}s verbleibend. Stimme jetzt ab:\n\n✅ {self.yes_votes} Stimmen\n❌ {self.no_votes} Stimmen",
+                        content=f"🗳️ Votekick against {self.target_user.mention}! Time: {self.timer}s remaining. Vote now:\n\n✅ {self.yes_votes} votes\n❌ {self.no_votes} votes",
                         view=self)
                 except discord.NotFound:
                     break
@@ -75,33 +70,31 @@ class VoteKickView(discord.ui.View):
             print("no message")
 
         await self.on_timeout()
-    
-
 
     async def on_timeout(self):
-        if self.executed:  # wenn schon einmal ausgeführt nicht noch einmal
+        if self.executed:  # if already executed don't run again
             return
         self.executed = True
-        # Wenn die zeit abgeluafen ist, wertet der bot aus
-        result = f"🗳️ Abstimmung beendet: ✅ {self.yes_votes} | ❌ {self.no_votes}\n"
-        # hier werden die votes gezählt
+        # When time is up, the bot evaluates
+        result = f"🗳️ Voting ended: ✅ {self.yes_votes} | ❌ {self.no_votes}\n"
+        # here the votes are counted
         if self.yes_votes > self.no_votes:
-            if self.target_user.voice is not None: # schaut ob der user überhaupt in einem voicechannel ist
+            if self.target_user.voice is not None: # checks if the user is in a voice channel at all
                 try:
-                    result += f"🚨 Mehrheit will {self.target_user.mention} kicken!"
-                    await self.target_user.move_to(None) # wird verscuht in aus dem voichannel zu kicken
+                    result += f"🚨 Majority wants to kick {self.target_user.mention}!"
+                    await self.target_user.move_to(None) # attempts to kick from voice channel
                 except discord.Forbidden:
-                    result += f"❌ Konnte {self.target_user.mention} nicht aus dem Voicechannel entfernen (fehlende Rechte)." # passiert falls der bot keine rechte hat fürs kicken
+                    result += f"❌ Could not remove {self.target_user.mention} from voice channel (missing permissions)." # happens if bot lacks kick permissions
             else:
-                result += f"ℹ️ {self.target_user.mention} ist nicht in einem Voicechannel" # wenn er in keine voicechannel ist
+                result += f"ℹ️ {self.target_user.mention} is not in a voice channel" # if not in any voice channel
         else:
-            result += f" {self.target_user.mention} darf bleiben." # die vote waren dafür, dass er im Voicechannel bleiben darf
+            result += f" {self.target_user.mention} may stay." # votes were in favor of staying in voice channel
 
         for item in self.children:
             if isinstance(item, Button):
-                item.disabled = True # buttons deaktivieren
+                item.disabled = True # disable buttons
 
-        # Nachricht aktualisieren
+        # Update message
         if self.message is not None:
             await self.message.edit(content=result, view=self)
         else:
@@ -109,54 +102,44 @@ class VoteKickView(discord.ui.View):
 
     async def start_timer(self, message):
         self.message = message
-        #starte den Timer prozess in einer seperaten task
+        # start timer process in a separate task
         asyncio.create_task(self.update_timer())
 
-    
-@tree.command(name="votekick", description="Starte eine Abstimmung um jemanden zu kicken.")
-@app_commands.describe(user="Wähle den User, den du kicken willst")
+@tree.command(name="votekick", description="Start a vote to kick someone.")
+@app_commands.describe(user="Select the user you want to kick")
 async def votekick(interaction: discord.Interaction, user: discord.Member):
-
-    #og_turtle = interaction.guild.get_role(895597801289961522)
-    #crazy_turtle = interaction.guild.get_role(1361142495580524584)
-    #member = interaction.guild.get_member(interaction.user.id)
-    #if og_turtle not in member.roles and crazy_turtle not in member.roles: 
-     #   await interaction.response.send_message("Du darfst diesen befehl nicht benutzen", ephemeral=True)
-      #  return
-
-    view = VoteKickView(target_user=user, guild=interaction.guild)
+    view = VoteKickView(target_user=user, guild=interaction.guild) # type: ignore
     # Ensure command is used in a guild
     if interaction.guild is None:
         await interaction.response.send_message(
-            "❌ Dieser Befehl kann nur in einem Server verwendet werden!",
+            "❌ This command can only be used in a server!",
             ephemeral=True
         )
         return
     
     await interaction.response.send_message(
-        f"🗳️ Votekick gestartet gegen {user.mention} ! Stimme jetzt ab:",
+        f"🗳️ Votekick started against {user.mention}! Vote now:",
         view=view
     )
 
-    # Speichere Nachricht für spätere Bearbeitung
+    # Save message for later editing
     view.message = await interaction.original_response()
 
-    # Speichern und Timer starten
+    # Save and start timer
     await view.start_timer(view.message)
 # endregion votekick
 
-# region wetter
-@tree.command(name="wetter", description="zeige das aktuelle Wetter für einen ort")
-@app_commands.describe(ort="Gib den Ort ein")
+# region weather
+@tree.command(name="wetter", description="show current weather for a location")
+@app_commands.describe(ort="Enter the location")
 async def wetter(interaction: discord.Interaction, ort: str):
-    await interaction.response.defer() # für den api anruf falls er lange braucht
+    await interaction.response.defer() # for the api call in case it takes long
 
     url = f"http://api.openweathermap.org/data/2.5/weather?q={ort}&appid={WEATHER_API_KEY}&units=metric&lang=de"
     response = requests.get(url)
 
-
     if response.status_code != 200:
-        await interaction.followup.send("❌ Ort nicht gefunden oder API-Fehler", ephemeral=True)
+        await interaction.followup.send("❌ Location not found or API error", ephemeral=True)
         return
     data = response.json()
     stadt = data["name"]
@@ -166,41 +149,30 @@ async def wetter(interaction: discord.Interaction, ort: str):
 
     antwort = (
         f"📍 **{stadt}**\n"
-        f"🌡️ Temperatur: {temp}°C\n"
-        f"🌥️ Wetter: {wetter}\n"
+        f"🌡️ Temperature: {temp}°C\n"
+        f"🌥️ Weather: {wetter}\n"
         f"💨 Wind: {wind} m/s"
     )
 
     await interaction.followup.send(antwort)
-    
 # endregion
 
 # region report
-@tree.command(name="report", description="melde eine Person")
-@app_commands.describe(grund="Warum willst du diese Person melden")
+@tree.command(name="report", description="report a person")
+@app_commands.describe(grund="Why do you want to report this person")
 async def report(interaction: discord.Interaction, grund: str):
         responses = [
             f"mimimi {grund} mimimi ",
-            "sei keine pussy",
+            "don't be a pussy",
             "ohhh nooooo!"
-
         ]
 
         try:
             await interaction.user.send(random.choice(responses))
-            await interaction.response.send_message("Deine Meldung wurde bearbeitet",ephemeral=True, delete_after= 30)
+            await interaction.response.send_message("Your report has been processed",ephemeral=True, delete_after= 30)
         except discord.Forbidden:
-            await interaction.response.send_message("ich kann dir keine dm senden", ephemeral=True, delete_after= 30)
+            await interaction.response.send_message("I can't send you a DM", ephemeral=True, delete_after= 30)
 #endregion    
-  
-
-
-    
-
-
-
-
-
 
 @bot.command()
 async def hello(ctx):
@@ -213,57 +185,43 @@ async def ping(ctx):
 @bot.command()
 async def dm(ctx, *, msg):
     try:
-        await ctx.author.send(f"du hast gesagt {msg}")
+        await ctx.author.send(f"you said {msg}")
     except discord.Forbidden:
-        await ctx.send("konnte keine dm senden")
+        await ctx.send("could not send DM")
 
 @bot.command()
 async def antworten(ctx):
-  
-    await ctx.reply("das ist eine antwort")
-
-
+    await ctx.reply("this is a reply")
 
 @bot.event
 async def on_message(message):
-    
-    # das der bot sich nicht selber antwortet
+    # prevent bot from responding to itself
     if message.author == bot.user:
         return
     
-    # man kann hier einfach trigger wörter mit antworten hinzufügen
+    # you can simply add trigger words with responses here
     responses = {
-        "turtlebot": "bottastisch!",
+        "turtlebot": "bottastic!",
         "samil": "boosted"  
-
     }
 
     content = message.content.lower()
     for trigger, response in responses.items():
         if trigger in content:
             await message.channel.send(response)
-            break # damit ur eine antwort pro nachricht 
+            break # so only one response per message
 
-    #wichtig das die andere commands noch funktionieren
+    # important so other commands still work
     await bot.process_commands(message)
 
 # Slash command /hallo
-@tree.command(name="hallo", description="sag hallo zurück!")
+@tree.command(name="hallo", description="say hello back!")
 async def hallo(interaction: discord.Interaction):
-    await interaction.response.send_message(f"hallo {interaction.user.name}")
+    await interaction.response.send_message(f"hello {interaction.user.name}")
 
 @bot.event
 async def on_ready():
     await tree.sync()
     print(f"Bot is ready. Logged in as {bot.user}.")
 
-
-
-
-
-
-
-        
-
 bot.run(DISCORD_TOKEN)
-
