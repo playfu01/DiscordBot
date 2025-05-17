@@ -1,0 +1,19 @@
+# Bytecode-Dateien
+__pycache__/
+*.py[cod]
+
+# Umgebungen
+.env
+venv/
+.env/
+
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
