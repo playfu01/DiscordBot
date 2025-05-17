@@ -3,7 +3,7 @@ import discord
 from dotenv import load_dotenv
 import os
 from discord.ext import commands
-from discord import app_commands
+from discord import Button, app_commands
 import asyncio
 import requests
 
@@ -11,6 +11,9 @@ import requests
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
+
+if not DISCORD_TOKEN or not WEATHER_API_KEY:
+    raise ValueError("Missing required environment variables")
 
 intents = discord.Intents.default()
 intents.message_content = True  # Required to read message content
@@ -38,9 +41,9 @@ class VoteKickView(discord.ui.View):
         if interaction.user.id not in self.voted:
              self.yes_votes += 1
              self.voted.append(interaction.user.id)
-             await interaction.response.send_message("✅ Deine Stimme wurde für das Kicken gezählt!", ephemeral=True)
+             await interaction.response.send_message("✅ Deine Stimme wurde für das Kicken gezählt!", ephemeral=True, delete_after= 30)
         else:
-            await interaction.response.send_message("Du hast schon gevoted!", ephemeral=True)
+            await interaction.response.send_message("Du hast schon gevoted!", ephemeral=True, delete_after= 30)
 
        
     
@@ -49,24 +52,27 @@ class VoteKickView(discord.ui.View):
         if interaction.user.id not in self.voted:
              self.no_votes += 1
              self.voted.append(interaction.user.id)
-             await interaction.response.send_message("❌ Deine Stimme wurde für gegen das Kicken gezählt!", ephemeral=True)
+             await interaction.response.send_message("❌ Deine Stimme wurde gegen das Kicken gezählt!", ephemeral=True, delete_after= 30)
         else:
-            await interaction.response.send_message("Du hast schon gevoted!", ephemeral=True)
+            await interaction.response.send_message("Du hast schon gevoted!", ephemeral=True, delete_after= 30)
         
         
 
 
     # update den timer jede sekunde und zählt die stimmen und zeig alles an
     async def update_timer(self):
-        while self.timer > 0 and not self.executed:
-            await asyncio.sleep(1)
-            self.timer -= 1
-            try:
-                await self.message.edit(
-                    content=f"🗳️ Votekick gegen {self.target_user.mention}! Zeit: {self.timer}s verbleibend. Stimme jetzt ab:\n\n✅ {self.yes_votes} Stimmen\n❌ {self.no_votes} Stimmen",
-                    view=self)
-            except discord.NotFound:
-                break
+        if self.message is not None:
+            while self.timer > 0 and not self.executed:
+                await asyncio.sleep(1)
+                self.timer -= 1
+                try:
+                    await self.message.edit(
+                        content=f"🗳️ Votekick gegen {self.target_user.mention}! Zeit: {self.timer}s verbleibend. Stimme jetzt ab:\n\n✅ {self.yes_votes} Stimmen\n❌ {self.no_votes} Stimmen",
+                        view=self)
+                except discord.NotFound:
+                    break
+        else:
+            print("no message")
 
         await self.on_timeout()
     
@@ -92,10 +98,14 @@ class VoteKickView(discord.ui.View):
             result += f" {self.target_user.mention} darf bleiben." # die vote waren dafür, dass er im Voicechannel bleiben darf
 
         for item in self.children:
-            item.disabled = True # buttons deaktivieren
+            if isinstance(item, Button):
+                item.disabled = True # buttons deaktivieren
 
         # Nachricht aktualisieren
-        await self.message.edit(content=result, view=self)
+        if self.message is not None:
+            await self.message.edit(content=result, view=self)
+        else:
+            print("message is none")
 
     async def start_timer(self, message):
         self.message = message
@@ -115,6 +125,14 @@ async def votekick(interaction: discord.Interaction, user: discord.Member):
       #  return
 
     view = VoteKickView(target_user=user, guild=interaction.guild)
+    # Ensure command is used in a guild
+    if interaction.guild is None:
+        await interaction.response.send_message(
+            "❌ Dieser Befehl kann nur in einem Server verwendet werden!",
+            ephemeral=True
+        )
+        return
+    
     await interaction.response.send_message(
         f"🗳️ Votekick gestartet gegen {user.mention} ! Stimme jetzt ab:",
         view=view
@@ -128,7 +146,6 @@ async def votekick(interaction: discord.Interaction, user: discord.Member):
 # endregion votekick
 
 # region wetter
-# Slash command: /wetter ort=Berlin
 @tree.command(name="wetter", description="zeige das aktuelle Wetter für einen ort")
 @app_commands.describe(ort="Gib den Ort ein")
 async def wetter(interaction: discord.Interaction, ort: str):
@@ -171,9 +188,9 @@ async def report(interaction: discord.Interaction, grund: str):
 
         try:
             await interaction.user.send(random.choice(responses))
-            await interaction.response.send_message("Deine Meldung wurde bearbeitet",ephemeral=True)
+            await interaction.response.send_message("Deine Meldung wurde bearbeitet",ephemeral=True, delete_after= 30)
         except discord.Forbidden:
-            await interaction.send("ich kann dir keine dm senden", ephemeral=True)
+            await interaction.response.send_message("ich kann dir keine dm senden", ephemeral=True, delete_after= 30)
 #endregion    
   
 
