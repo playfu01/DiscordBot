@@ -1,0 +1,6 @@
+[
+  ["Hallo", {"cats": {"greeting": 1.0, "weather": 0.0, "help": 0.0, "goodbye": 0.0}}],
+  ["Wie ist das Wetter heute?", {"cats": {"greeting": 0.0, "weather": 1.0, "help": 0.0, "goodbye": 0.0}}],
+  ["Was kannst du?", {"cats": {"greeting": 0.0, "weather": 0.0, "help": 1.0, "goodbye": 0.0}}],
+  ["Tschüss", {"cats": {"greeting": 0.0, "weather": 0.0, "help": 0.0, "goodbye": 1.0}}]
+]

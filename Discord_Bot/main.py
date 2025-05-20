@@ -19,7 +19,7 @@ intents = discord.Intents.default()
 intents.message_content = True  # Required to read message content
 intents.members = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix="!",help_command=None, intents=intents)
 tree = bot.tree
 timer = 30
 
@@ -35,7 +35,6 @@ class VoteKickView(discord.ui.View):
         self.timer = timer 
         self.voted = []
         self.executed = False # check so it doesn't run twice
-
     @discord.ui.button(label="KICKEN", style=discord.ButtonStyle.green)
     async def kick_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id not in self.voted:
@@ -174,22 +173,56 @@ async def report(interaction: discord.Interaction, grund: str):
             await interaction.response.send_message("I can't send you a DM", ephemeral=True, delete_after= 30)
 #endregion    
 
-@bot.command()
+
+
+
+@tree.command(name="help", description="list all the commands")
+async def help(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+
+    slash_commands = tree.get_commands()
+
+    help_text =  "**📖 Verfügbare Slash-Befehle:**\n\n"
+    
+    for cmd in slash_commands:
+        if isinstance(cmd, app_commands.Command):
+            name = f"/{cmd.name}"
+            description = cmd.description or "Keine Beschreibung vorhanden"
+            help_text += f"**{name}** – {description}\n"
+
+    prefix_help_text = "\n**⌨️ Verfügbare Prefix-Befehle:**\n\n"
+
+    for cmd in bot.commands:
+        if not cmd.hidden:
+            name = f"!{cmd.name}"
+            desc = cmd.description or "Keine Beschreibung vorhanden"
+            prefix_help_text += f"**{name}** – {desc}\n" 
+
+    await interaction.followup.send(help_text + prefix_help_text, ephemeral=True)
+
+
+
+# Slash command /hallo
+@tree.command(name="hallo", description="say hello back!")
+async def hallo(interaction: discord.Interaction):
+    await interaction.response.send_message(f"hello {interaction.user.name}")
+
+@bot.command(description="sagt hallo")
 async def hello(ctx):
     await ctx.send(f"Hello, {ctx.author.name}!")
 
-@bot.command()
+@bot.command(description="pong!")
 async def ping(ctx):
     await ctx.send("pong!")
 
-@bot.command()
+@bot.command(description="schreibt dir eine dm mit deiner Nachricht")
 async def dm(ctx, *, msg):
     try:
         await ctx.author.send(f"you said {msg}")
     except discord.Forbidden:
         await ctx.send("could not send DM")
 
-@bot.command()
+@bot.command(description="antwortet dir")
 async def antworten(ctx):
     await ctx.reply("this is a reply")
 
@@ -213,11 +246,6 @@ async def on_message(message):
 
     # important so other commands still work
     await bot.process_commands(message)
-
-# Slash command /hallo
-@tree.command(name="hallo", description="say hello back!")
-async def hallo(interaction: discord.Interaction):
-    await interaction.response.send_message(f"hello {interaction.user.name}")
 
 @bot.event
 async def on_ready():
