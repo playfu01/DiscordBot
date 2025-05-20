@@ -2,13 +2,8 @@
 
 Welcome to my collection of projects! This repository contains a few different projects I am working on, mainly focusing on automation and bots.
 
-## 📂 Projects Overview
+## 📂 Overview
 
-### Cardmarket_tracker
-A project designed to track prices or data on Cardmarket (a popular marketplace for trading card games).  
-*Details about features, tech stack, or how to use it can be added here.*
-
-### Discord_Bot
 A custom Discord bot with various commands and automation features.  
 ## Features
 
