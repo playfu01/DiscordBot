@@ -1,6 +1,6 @@
-# 🛠️ My Projects Repository
+# 🛠️ My DiscordBot Repository
 
-Welcome to my collection of projects! This repository contains a few different projects I am working on, mainly focusing on automation and bots.
+Welcome to my DiscordBot repository!
 
 ## 📂 Overview
 
